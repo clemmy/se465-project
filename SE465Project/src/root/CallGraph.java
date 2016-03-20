@@ -29,26 +29,41 @@ public class CallGraph {
                     lastFuncId = id;
                     reverseTable.put(functionName, id);
 
-                    graph.put(id, new HashSet<>());
+                    graph.put(id, new HashSet<Integer>());
 
-                } else if (line.startsWith("CS<")) {
+                } else if (line.startsWith("  CS<")) {
+
                     String functionName = line.split("\'")[1];
 
                     if (!translationTable.contains(functionName)) {
                         translationTable.add(functionName);
                         int id = translationTable.size() - 1;
                         reverseTable.put(functionName, id);
-                        graph.put(id, new HashSet<>());
+                        graph.put(id, new HashSet<Integer>());
                     } else {
                         int id = reverseTable.get(functionName);
                         HashSet<Integer> edges = graph.get(lastFuncId);
                         edges.add(id);
                         graph.put(lastFuncId, edges);
                     }
+                } else if (line.startsWith("Call graph node <")){
+                    String uselessString;
+                    do{
+                        uselessString = br.readLine();
+                    }while(uselessString.startsWith("  CS<0x0>"));
+
                 }
             }
         } catch (Exception e) {
 
+        }
+    }
+
+    public void debugCallGraph(){
+        for (String name: reverseTable.keySet()){
+            String key =name.toString();
+            String value = reverseTable.get(name).toString();
+            System.out.println(key + " " + value);
         }
     }
 }
