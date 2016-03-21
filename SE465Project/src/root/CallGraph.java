@@ -46,11 +46,11 @@ public class CallGraph {
                         edges.add(id);
                         graph.put(lastFuncId, edges);
                     }
-                } else if (line.startsWith("Call graph node <")){
+                } else if (line.startsWith("Call graph node <<null function>>")) {
                     String uselessString;
-                    do{
+                    do {
                         uselessString = br.readLine();
-                    }while(uselessString.startsWith("  CS<0x0>"));
+                    } while (uselessString.startsWith("  CS<0x0>"));
 
                 }
             }
