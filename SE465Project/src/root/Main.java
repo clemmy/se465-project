@@ -5,7 +5,7 @@ public class Main {
         System.out.println("running");
 
         CallGraph cg = new CallGraph(args[0]);
-        cg.debugCallGraph();
+//        cg.debugCallGraph();
         SupportGraph sg = new SupportGraph(cg);
     }
 }
