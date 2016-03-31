@@ -12,7 +12,7 @@ public class CallGraph {
     public CallGraph(String filename) {
 
         graph = new HashMap<Integer, HashSet<Integer>>(20000);
-        translationTable = new ArrayList<>();
+        translationTable = new ArrayList<String>();
         reverseTable = new HashMap<String, Integer>();
 
         try {
@@ -21,17 +21,22 @@ public class CallGraph {
 
             BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("Call graph node for function:")) {
+                if (line.startsWith("Call graph node for function:")) { // outer function
                     String functionName = line.split("\'")[1];
 
-                    translationTable.add(functionName);
-                    int id = translationTable.size() - 1;
-                    lastFuncId = id;
-                    reverseTable.put(functionName, id);
+                    int id;
+                    if (!translationTable.contains(functionName)) {
+                        translationTable.add(functionName);
+                        id = translationTable.size() - 1;
+                        lastFuncId = id;
+                        reverseTable.put(functionName, id);
+                    } else {
+                        id = reverseTable.get(functionName);
+                    }
 
                     graph.put(id, new HashSet<Integer>());
 
-                } else if (line.startsWith("  CS<")) {
+                } else if (line.startsWith("  CS<")) { // inside function
 
                     String functionName = line.split("\'")[1];
 
@@ -39,7 +44,8 @@ public class CallGraph {
                         translationTable.add(functionName);
                         int id = translationTable.size() - 1;
                         reverseTable.put(functionName, id);
-                        graph.put(id, new HashSet<Integer>());
+                        HashSet<Integer> edges = graph.get(lastFuncId);
+                        edges.add(id);
                     } else {
                         int id = reverseTable.get(functionName);
                         HashSet<Integer> edges = graph.get(lastFuncId);
@@ -48,10 +54,7 @@ public class CallGraph {
                     }
                 } else if (line.startsWith("Call graph node <<null function>>")) {
                     String uselessString;
-                    do {
-                        uselessString = br.readLine();
-                    } while (uselessString.startsWith("  CS<0x0>"));
-
+                    while (br.readLine().startsWith("  CS<0x0>")) {}
                 }
             }
         } catch (Exception e) {
@@ -61,7 +64,7 @@ public class CallGraph {
 
     public void debugCallGraph(){
         for (String name: reverseTable.keySet()){
-            String key =name.toString();
+            String key = name.toString();
             String value = reverseTable.get(name).toString();
             System.out.println(key + " " + value);
         }
