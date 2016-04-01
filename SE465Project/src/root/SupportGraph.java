@@ -67,7 +67,5 @@ public class SupportGraph {
                 }
             }
         }
-
-        System.out.println("done");
     }
 }
