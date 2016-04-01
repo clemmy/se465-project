@@ -1,13 +1,11 @@
-package root;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class SupportGraph {
-    HashMap<Integer, HashMap<Integer, Integer>> pairSupport;
-    ArrayList<Integer> support; // arraylist of hashsets
+    public HashMap<Integer, HashMap<Integer, Integer>> pairSupport;
+    public ArrayList<Integer> support; // arraylist of hashsets
 
     public SupportGraph(CallGraph cg) {
         pairSupport = new HashMap<Integer, HashMap<Integer, Integer>>(20000);
@@ -16,7 +14,7 @@ public class SupportGraph {
             support.add(0);
         }
 
-        for (HashMap.Entry<Integer, HashSet<Integer>> hashedFnc : cg.graph.entrySet()) {
+        for (Map.Entry<Integer, HashSet<Integer>> hashedFnc : cg.graph.entrySet()) {
             HashSet<Integer> children = hashedFnc.getValue();
             Integer[] childrenArray = new Integer[children.size()];
             childrenArray = children.toArray(childrenArray);

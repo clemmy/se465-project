@@ -1,0 +1,55 @@
+CallGraph Root is: main
+Call graph node <<null function>><<0x7fac68c0fd60>>  #uses=0
+  CS<0x0> calls function '_Z1Av'
+  CS<0x0> calls function '_Z1Bv'
+  CS<0x0> calls function '_Z1Cv'
+  CS<0x0> calls function '_Z1Dv'
+  CS<0x0> calls function '_Z6scope1v'
+  CS<0x0> calls function '_Z6scope2v'
+  CS<0x0> calls function '_Z6scope3v'
+  CS<0x0> calls function '_Z6scope4v'
+  CS<0x0> calls function '_Z6scope5v'
+  CS<0x0> calls function '_Z6scope6v'
+  CS<0x0> calls function 'main'
+
+Call graph node for function: '_Z1Cv'<<0x7fac68c0ff50>>  #uses=3
+
+Call graph node for function: '_Z1Dv'<<0x7fac68c0fee0>>  #uses=6
+
+Call graph node for function: '_Z6scope1v'<<0x7fac68c10070>>  #uses=3
+  CS<0x7fac68c0d408> calls function '_Z1Av'
+  CS<0x7fac68c0d478> calls function '_Z1Bv'
+  CS<0x7fac68c0d4e8> calls function '_Z1Cv'
+  CS<0x7fac68c0d558> calls function '_Z1Dv'
+
+Call graph node for function: '_Z1Bv'<<0x7fac68c0fea0>>  #uses=7
+
+Call graph node for function: '_Z1Av'<<0x7fac68c0fe10>>  #uses=5
+
+Call graph node for function: '_Z6scope6v'<<0x7fac68c100b0>>  #uses=1
+  CS<0x7fac68c0de28> calls function '_Z1Bv'
+  CS<0x7fac68c0de98> calls function '_Z1Dv'
+
+Call graph node for function: '_Z6scope2v'<<0x7fac68c101b0>>  #uses=1
+  CS<0x7fac68c0d668> calls function '_Z1Av'
+  CS<0x7fac68c0d6d8> calls function '_Z1Cv'
+  CS<0x7fac68c0d748> calls function '_Z1Dv'
+
+Call graph node for function: '_Z6scope3v'<<0x7fac68c10220>>  #uses=1
+  CS<0x7fac68c0d858> calls function '_Z1Av'
+  CS<0x7fac68c0d8c8> calls function '_Z1Bv'
+  CS<0x7fac68c0d938> calls function '_Z1Bv'
+
+Call graph node for function: '_Z6scope4v'<<0x7fac68c10310>>  #uses=1
+  CS<0x7fac68c0da48> calls function '_Z1Bv'
+  CS<0x7fac68c0dab8> calls function '_Z1Dv'
+  CS<0x7fac68c0db28> calls function '_Z6scope1v'
+
+Call graph node for function: '_Z6scope5v'<<0x7fac68c10400>>  #uses=1
+  CS<0x7fac68c0dc38> calls function '_Z1Bv'
+  CS<0x7fac68c0dca8> calls function '_Z1Dv'
+  CS<0x7fac68c0dd18> calls function '_Z1Av'
+
+Call graph node for function: 'main'<<0x7fac68c10760>>  #uses=1
+  CS<0x7fac68c0dfe8> calls function '_Z6scope1v'
+
