@@ -89,4 +89,162 @@
 
   \section*{Part (II)}
   See pii/.
+  \begin{enumerate}[(a)]
+  \item
+  \textbf{Error 10065:}
+
+  This is a bug on line 639-640 because this unintentionally falls to case 4.  The proper way of implementing this would be to do the following: (On line 639-642, in BooleanUtils.java)
+
+  \begin{lstlisting}
+          (str.charAt(1) == 'E' || str.charAt(1) == 'e') &&
+          (str.charAt(2) == 'S' || str.charAt(2) == 's');
+      }
+      return false;
+  }
+  case 4: {
+      char ch = str.charAt(0);
+  \end{lstlisting}
+
+  \textbf{Error 10066:}
+
+  This is an Bug because the Cloneable method is not implemented. If the class implements this method, but the method is not cloneable, then clonable does a shallow copy. For a class such as StringBuilder, the program should use a deep copy for the clone method, or not implement it at all In StrBuilder.java on line 78, a possible solution is: 
+
+  \begin{lstlisting}
+  public class StrBuilder {
+  \end{lstlisting}
+
+  \textbf{Error 10067:}
+
+  This is False Positive as printing the stack trace depends on the default encoding. This does not require a set encoding for correct functionality. Since the program is only printing out the stack trace, no special encoding is required.
+
+  \textbf{Error 10068:}
+
+  This is a bug in JVMRandom.java on line 110 because there are performance issues present here, and using the nextInt method is faster and more reliable. The class is extending functionality from Random, which means that the random class is meant to be used  within this class. Using math.random and casting the value as int can be replaced with using nextInt. (On line 110-111, in JVMRandom.java)
+
+  \begin{lstlisting}
+  return nextInt(n)
+  }
+  \end{lstlisting}
+
+  \textbf{Error 10069:}
+
+  This is a False Positive because it appears that the programmer is testing if the classes are the same in the previous else if. Therefore, the programmer appears to explicitly add a case to check if the names are equal so the program can return false. This appears to be deliberate to ensure that the default case does not accidentally return true.
+
+  \textbf{Error 10070:}
+
+  This is a False Positive because it appears that the programmer is testing if the classes are the same in the previous else if. Therefore, the programmer appears to explicitly add a case to check if the names are equal so the program can return false. This appears to be deliberate to ensure that the default case does not accidentally return true.
+
+  \textbf{Error 10071:}
+
+  This is a False Positive because the programmer has a very good reason to include this equality check. When a string literal or a reference to a string literal is created, the java compiler automatically references a preexisting equal string literal, if it exists. This code appears to be here because it can speed up the finishing time of the method. Using String.equals would be far more time consuming. String.equals would not provide any benefits in this function because the logic below checks for a Boolean in the switch statement.
+
+  \textbf{Error 10072:}
+
+  This is a False Positive for the same reasons described above. The equality check is there to speed up finishing time for cases where both inputs are references to string literals.
+  
+  \textbf{Error 10073:}
+
+  This is Intentional. Unlike the cases described above, this block of codes core functionality is linked with the string comparison. The objects are compared to predefined string literals that are initialized on creation. The value is checked to see if they are string literals or not, and if they are not, they are added to a StringBuffer. Although this code could be implemented to speed up the runtime, the code is very dubious as its flow is hard to follow and a boost in performance is not guarenteed. If the code is not of type StringBuffer, it is converted to be a part of StringBuffer which could be an expensive operation in terms of time and space. Although intentional, this code should use the String.equals method, which greatly simplifies the code.
+
+  \begin{lstlisting}
+  if (value.equals(y)) {
+      buffer.append(paddedValue(years, padWithZeros, count));
+      lastOutputSeconds = false;
+  } else if (value.equals(M)) {
+      buffer.append(paddedValue(months, padWithZeros, count));
+      lastOutputSeconds = false;
+  } else if (value.equals(d)) {
+      buffer.append(paddedValue(days, padWithZeros, count));
+      lastOutputSeconds = false;
+  } else if (value.equals(H)) {
+      buffer.append(paddedValue(hours, padWithZeros, count));
+      lastOutputSeconds = false;
+  } else if (value.equals(m)) {
+      buffer.append(paddedValue(minutes, padWithZeros, count));
+      lastOutputSeconds = false;
+  } else if (value.equals(s)) {
+      buffer.append(paddedValue(seconds, padWithZeros, count));
+      lastOutputSeconds = true;
+  } else if (value.equals(S)) {
+  \end{lstlisting}
+
+  \textbf{Error 10074:}
+
+  This is a Bug on line 485 in DurationFormatUtils.java because checking if a string is equal to another should be done using the String.equals operator. The method of fixing is as follows: (On line 484-487, in DurationFormatUtils.java)
+
+  \begin{lstlisting}
+  if (value != null) {
+      if (previous != null && previous.getValue().equals(value)) {
+          previous.increment();
+      } else {
+  \end{lstlisting}
+
+  \textbf{Error 10075:}
+
+  This is a Bug on line 649 in Entities.java because this logic can cause an integer overflow. The method of resolving this is to change the signed right shift operator to an unsigned right shift operator. The following code shows how: (on line 648-650 in Entities.java)
+  
+  \begin{lstlisting}
+  while (low <= high) {
+      int mid = (low + high) >>> 1;
+      int midVal = values[mid];
+
+  \end{lstlisting}
+
+  \textbf{Error 10076:}
+
+  This is False Positive because it is stated in the documentation above the negate method that the program should return null if it is passed a null object.
+  
+  \textbf{Error 10077:}
+  
+  This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
+  
+  \textbf{Error 10078:}
+  
+  This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
+  
+  \textbf{Error 10079:}
+  
+  This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
+  
+  \textbf{Error 10080:}
+  
+  This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
+  
+  \textbf{Error 10081:}
+  
+  This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
+
+  \textbf{Error 10082:}
+  
+  This appears to be intentional. It is bad practice to catch a general error but it appears to be there for debugging purposes. It appears that the only case where the class would return null is if there is an error within the try/catch.
+  
+  \textbf{Error 10083:}
+  
+  This appears to be a bug on line 137 in FastDateFormat.java. There is a comment detailing that the fields should be serializable. Rules is a custom class and should either be serializable or transient to prevent serialization. A possible fix is as follows: (on line 137 in FastDateFormat.java)
+
+  \begin{lstlisting}
+  private transient Rule[] mRules;
+  \end{lstlisting}
+
+  \textbf{Error 10084:}
+  
+  This appears to be intentional. In the hashmap, the key is never used, but this does not mean that the key will never be used. Therefore, it is justifiable that the developer stores the key although there is a performance impact. This performance impact is probably negligible, and can be considered bad practice but it has no impact and more functions could be written that use this variable.
+
+  there are two possibilities. One possibility is that a StrBuilder is not suppose to be cloneable. In this case, the method clone would still show up as a valid method if left unimplemented but would throw an error when called. This is undesirable but acceptable behavior as the function only throws an error and does nothing else. If the StrBuilder is suppose to implement cloneable, then the developer has not implemented the clone function on purpose which is intentional but bad practice. If the developer meant to implement Clone later, then implementing cloneable at a different date would be the correct method of resolving this issue. This is probably intentional and meant to be implemented but it is considered to be bad practice.
+
+  \item
+  \textbf{Error 10248:}
+  
+  This is a bug in CallGraph.java on line 25-68. The BufferedReader is not closed after we finish using it. A possible fix is as follows: (in CallGraph.java on line 67-68)
+
+  \begin{lstlisting}
+      }
+  Br.close();
+  }
+  \end{lstlisting}
+
+  \textbf{Error 10249:}
+
+  This is a Intentional. The try catch was placed there for debugging purposes to quickly identify if there exists a bug in the code. However, catching runtime errors is generally bad practice. 
+  \end{enumerate}
 \end{document}
