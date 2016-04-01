@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class SupportGraph {
-    HashMap<Pair, Integer> pairSupport;
-    ArrayList<Integer> support;
+    HashMap<Integer, HashMap<Integer, Integer>> pairSupport;
+    ArrayList<Integer> support; // arraylist of hashsets
 
     public SupportGraph(CallGraph cg) {
-        pairSupport = new HashMap<Pair, Integer>(20000);
+        pairSupport = new HashMap<Integer, HashMap<Integer, Integer>>(20000);
         support = new ArrayList<Integer>(cg.translationTable.size());
         while(support.size() < cg.translationTable.size()) {
             support.add(0);
@@ -27,12 +27,36 @@ public class SupportGraph {
                 exists[childrenArray[i]] = true;
 
                 for (int j = i + 1; j < childrenArray.length; j++) {
-                    Pair p = new Pair(childrenArray[i], childrenArray[j]);
-                    if (pairSupport.containsKey(p)) {
-                        Integer count = pairSupport.get(p);
-                        pairSupport.put(p, count + 1);
+
+                    int first = Math.min(childrenArray[i], childrenArray[j]);
+                    int second = Math.max(childrenArray[i], childrenArray[j]);
+
+                    if (pairSupport.containsKey(first)) {
+                        HashMap<Integer, Integer> secondHash = pairSupport.get(first);
+                        if (secondHash.containsKey(second)) {
+                            Integer count = secondHash.get(second);
+                            secondHash.put(second, count + 1);
+                        } else {
+                            secondHash.put(second, 1);
+                        }
                     } else {
-                        pairSupport.put(p, 1);
+                        HashMap<Integer, Integer> secondHash = new HashMap<Integer, Integer>();
+                        secondHash.put(second, 1);
+                        pairSupport.put(first, secondHash);
+                    }
+
+                    if (pairSupport.containsKey(second)) {
+                        HashMap<Integer, Integer> secondHash = pairSupport.get(second);
+                        if (secondHash.containsKey(first)) {
+                            Integer count = secondHash.get(first);
+                            secondHash.put(first, count + 1);
+                        } else {
+                            secondHash.put(first, 1);
+                        }
+                    } else {
+                        HashMap<Integer, Integer> secondHash = new HashMap<Integer, Integer>();
+                        secondHash.put(first, 1);
+                        pairSupport.put(second, secondHash);
                     }
                 }
             }

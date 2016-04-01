@@ -8,6 +8,7 @@ public class CallGraph {
     HashMap<Integer, HashSet<Integer>> graph;
     ArrayList<String> translationTable;
     HashMap<String, Integer> reverseTable;
+    final static double T_THRESHOLD = 0.65;
 
     public CallGraph(String filename) {
 
@@ -62,11 +63,40 @@ public class CallGraph {
         }
     }
 
-    public void debugCallGraph(){
+    public void debugCallGraph() {
         for (String name: reverseTable.keySet()){
             String key = name.toString();
             String value = reverseTable.get(name).toString();
             System.out.println(key + " " + value);
+        }
+    }
+
+    public void analyze(SupportGraph sg) {
+        for (HashMap.Entry<Integer, HashSet<Integer>> hashedFnc : this.graph.entrySet()) {
+            HashSet<Integer> children = hashedFnc.getValue();
+
+            //[a, b, c, d] array
+            for (Integer child : children) { // loop through each function called
+                HashMap<Integer, Integer> childrenPairs = sg.pairSupport.get(child);
+
+                for (Integer candidate : childrenPairs.keySet()) {
+                    if (!children.contains(candidate)) { // pair doesn't exist in children
+                        double T_CONFIDENCE = (double)sg.pairSupport.get(child).get(candidate)/(double)sg.support.get(child);
+                        if (T_CONFIDENCE >= T_THRESHOLD) {
+                            System.out.print("bug: " + translationTable.get(child) + " in " + translationTable.get(hashedFnc.getKey()) + ", ");
+                            String p1 = translationTable.get(child);
+                            String p2 = translationTable.get(candidate);
+                            if (p1.compareTo(p2) > 0) {
+                                System.out.print("pair: (" + p2 + ", " + p1 + "), ");
+                            } else {
+                                System.out.print("pair: (" + p1 + ", " + p2 + "), ");
+                            }
+                            System.out.print("support: " + sg.pairSupport.get(child).get(candidate) + ", ");
+                            System.out.print("confidence: " + String.format( "%.2f", T_CONFIDENCE*100 ) + "%\n");
+                        }
+                    }
+                }
+            }
         }
     }
 }
