@@ -71,8 +71,36 @@ public class CallGraph {
         }
     }
 
+    public void expand(int passes) {
+        for (int i=0; i<passes-1; ++i) {
+            // iterate through top level functions
+            for (Map.Entry<Integer, HashSet<Integer>> hashedFnc : this.graph.entrySet()) {
+
+                ArrayList<Integer> functionsToExpand = new ArrayList<>();
+
+                // iterate through inner functions
+                for (Integer innerFnc : hashedFnc.getValue()) {
+                    // check if it exists in the top level
+                    if (graph.containsKey(innerFnc) && !graph.get(innerFnc).isEmpty()) {
+                        functionsToExpand.add(innerFnc);
+                    }
+                }
+
+                if (functionsToExpand.isEmpty() == false) {
+                    for (Integer fnc: functionsToExpand) {
+                        HashSet<Integer> edges = hashedFnc.getValue();
+                        edges.remove(fnc);
+                        for (Integer inner : this.graph.get(fnc)) {
+                            edges.add(inner);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void debugCallGraph() {
-        for (String name: reverseTable.keySet()){
+        for (String name: reverseTable.keySet()) {
             String key = name.toString();
             String value = reverseTable.get(name).toString();
             System.out.println(key + " " + value);
