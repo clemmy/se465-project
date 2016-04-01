@@ -1,3 +1,6 @@
 #!/bin/bash
+unset JAVA_TOOL_OPTIONS
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 opt -print-callgraph $1 1>/dev/null 2>call_graph
-java -Xms512m Main call_graph $2 $3 2>/dev/null
+
+java -Xms128m -Xmx128m -cp $DIR Main call_graph $2 $3 2>/dev/null | sort
