@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1459555974 "proj_sub.tex" "proj_sub.pdf" "proj_sub" 1459555975
+["pdflatex"] 1459556563 "proj_sub.tex" "proj_sub.pdf" "proj_sub" 1459556564
   "/usr/local/texlive/2014/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1246382020 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -164,9 +164,9 @@
   "/usr/local/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1401025944 1445653 26a0aacf3d70032b1ec192e8c7792117 ""
   "/usr/local/texlive/2014/texmf-var/web2c/pdftex/pdflatex.fmt" 1401025990 3832012 904d82bdcc8abf2b1cd296990b82553b ""
   "/usr/local/texlive/2014/texmf.cnf" 1401025936 577 a59edbde8d3a8c549d0eeaab1739e2ff ""
-  "proj_sub.aux" 1459555975 8 a94a2480d3289e625eea47cd1b285758 ""
-  "proj_sub.tex" 1459555945 23985 3f7b2a45c32119f059275d97d6cac571 ""
+  "proj_sub.aux" 1459556564 8 a94a2480d3289e625eea47cd1b285758 ""
+  "proj_sub.tex" 1459556562 24007 73990a95be87e6eba3a2b68e76e2308d ""
   (generated)
+  "proj_sub.pdf"
   "proj_sub.aux"
   "proj_sub.log"
-  "proj_sub.pdf"
