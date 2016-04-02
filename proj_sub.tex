@@ -84,7 +84,106 @@
       % apr_array_make, apr_array_push
       % apr_array_make, apr_hook_debug_show
     \item
-      See pi/partC.
+      For our interprocedural analysis, we decided to expand the inner functions in our call graph with the its callees if they existed. The depth that we expand into is passed in as an optional 4th parameter when running pipair. For example, if we want to expand 1 level deep with a support of 3 and confidence of 60\%, then we need to make 2 passes, and the resulting executing command is:
+      \begin{lstlisting}[language=bash]
+        $ ./pipair code.bc 3 65 2
+      \end{lstlisting}
+
+      \subsection*{Algorithm used}
+      The algorithm used to implement the recursive expansion of functions is similar to breadth-first search. After the initial call graph is modeled in our testing program, then we iterate through it equal to passes - 1 times. In each pass, every top level function is visited, and the program checks if any of the functions that the top level function calls is also a top level function. If so, then it is replaced with the functions that it calls, and this process is repeated again for every pass.
+
+      \begin{algorithmic}[1]
+        \For{$i \in 0:passes-1$}
+          \For{$top\_level\_fnc \in top\_level\_functions$}
+            \State $fncs\_to\_expand \gets []$
+            \For{$inner \in top\_level\_fnc$}
+              \If{$top\_level\_functions.contains(inner)$}
+                \State $fncs\_to\_expand.add(inner)$
+              \EndIf
+            \EndFor
+
+            \For{$fnc \in fncs\_to\_expand$}
+              \State $top\_level\_fnc.remove(fnc)$
+              \For{$inner \in fnc$}
+                \State $top\_level\_fnc.add(inner)$
+              \EndFor
+            \EndFor
+          \EndFor
+        \EndFor
+      \end{algorithmic}
+
+      \subsection*{Experiment}
+      For the experiment, consider the following call graph:
+      \begin{lstlisting}[basicstyle=\small\ttfamily]
+        CallGraph Root is: main
+
+        Call graph node for function: '_Z1Cv'<<0x7fd6f240feb0>>  #uses=3
+
+        Call graph node for function: '_Z1Dv'<<0x7fd6f240fe40>>  #uses=6
+
+        Call graph node for function: '_Z6scope1v'<<0x7fd6f240ffd0>>  #uses=3
+          CS<0x7fd6f240d448> calls function '_Z1Cv'
+          CS<0x7fd6f240d4b8> calls function '_Z1Dv'
+
+        Call graph node for function: '_Z1Bv'<<0x7fd6f240fe00>>  #uses=7
+
+        Call graph node for function: '_Z1Av'<<0x7fd6f240fd70>>  #uses=5
+
+        Call graph node for function: '_Z6scope6v'<<0x7fd6f2410010>>  #uses=1
+          CS<0x7fd6f240dd88> calls function '_Z1Av'
+          CS<0x7fd6f240ddf8> calls function '_Z1Dv'
+
+        Call graph node for function: '_Z6scope2v'<<0x7fd6f2410110>>  #uses=1
+          CS<0x7fd6f240d5c8> calls function '_Z1Av'
+          CS<0x7fd6f240d638> calls function '_Z1Cv'
+          CS<0x7fd6f240d6a8> calls function '_Z1Dv'
+
+        Call graph node for function: '_Z6scope3v'<<0x7fd6f2410180>>  #uses=1
+          CS<0x7fd6f240d7b8> calls function '_Z1Av'
+          CS<0x7fd6f240d828> calls function '_Z1Bv'
+          CS<0x7fd6f240d898> calls function '_Z1Dv'
+
+        Call graph node for function: '_Z6scope4v'<<0x7fd6f2410270>>  #uses=1
+          CS<0x7fd6f240d9a8> calls function '_Z1Bv'
+          CS<0x7fd6f240da18> calls function '_Z1Av'
+          CS<0x7fd6f240da88> calls function '_Z6scope1v'
+
+        Call graph node for function: '_Z6scope5v'<<0x7fd6f2410360>>  #uses=1
+          CS<0x7fd6f240db98> calls function '_Z1Bv'
+          CS<0x7fd6f240dc08> calls function '_Z1Dv'
+          CS<0x7fd6f240dc78> calls function '_Z1Av'
+
+        Call graph node for function: 'main'<<0x7fd6f24106c0>>  #uses=1
+          CS<0x7fd6f240df48> calls function '_Z6scope2v'
+      \end{lstlisting}
+
+      First, we run our testing program with a support of 3, a confidence of 60\%, and 1 pass:
+      \begin{lstlisting}[language=bash]
+        $ ./pipair code.bc 3 65 1
+      \end{lstlisting}
+
+      \begin{lstlisting}[basicstyle=\small\ttfamily]
+        bug: _Z1Dv in _Z6scope1v, pair: (_Z1Av, _Z1Dv), support: 4, confidence: 80.00%
+        bug: _Z1Av in _Z6scope6v, pair: (_Z1Av, _Z1Bv), support: 3, confidence: 60.00%
+        bug: _Z1Av in _Z6scope2v, pair: (_Z1Av, _Z1Bv), support: 3, confidence: 60.00%
+        bug: _Z1Av in _Z6scope4v, pair: (_Z1Av, _Z1Dv), support: 4, confidence: 80.00%
+      \end{lstlisting}
+
+      Next, we run it with a support of 3, a confidence of 60\%, and 2 passes.
+      \begin{lstlisting}[language=bash]
+        $ ./pipair code.bc 3 65 2
+      \end{lstlisting}
+
+      \begin{lstlisting}[basicstyle=\small\ttfamily]
+        bug: _Z1Cv in _Z6scope1v, pair: (_Z1Av, _Z1Cv), support: 3, confidence: 75.00%
+        bug: _Z1Dv in _Z6scope1v, pair: (_Z1Av, _Z1Dv), support: 6, confidence: 85.71%
+      \end{lstlisting}
+
+      Comparing the results, we see that running our testing program with 2 passes yielded less bugs than when we ran it with 1 pass.
+
+      \subsection*{Analysis and Conclusions}
+      From inspecting the call graph, we notice that functions A() and D() are paired together often, so when A() is called in scope4() without D(), then our program infers that it is a bug with our specified support and confidence values. However, intuitively, we know that scope1() actually calls functions C(), and D(), and since scope4() calls scope1(), then A() in scope4() should actually not be a bug. Thus, by making a second pass and expanding scope1() into its C() and D() calls, then we eliminate false positives.
+
   \end{enumerate}
 
   \section*{Part (II)}
@@ -107,7 +206,7 @@
 
   \textbf{Error 10066:}
 
-  This is an Bug because the Cloneable method is not implemented. If the class implements this method, but the method is not cloneable, then clonable does a shallow copy. For a class such as StringBuilder, the program should use a deep copy for the clone method, or not implement it at all In StrBuilder.java on line 78, a possible solution is: 
+  This is an Bug because the Cloneable method is not implemented. If the class implements this method, but the method is not cloneable, then clonable does a shallow copy. For a class such as StringBuilder, the program should use a deep copy for the clone method, or not implement it at all In StrBuilder.java on line 78, a possible solution is:
 
   \begin{lstlisting}
   public class StrBuilder {
@@ -141,7 +240,7 @@
   \textbf{Error 10072:}
 
   This is a False Positive for the same reasons described above. The equality check is there to speed up finishing time for cases where both inputs are references to string literals.
-  
+
   \textbf{Error 10073:}
 
   This is Intentional. Unlike the cases described above, this block of codes core functionality is linked with the string comparison. The objects are compared to predefined string literals that are initialized on creation. The value is checked to see if they are string literals or not, and if they are not, they are added to a StringBuffer. Although this code could be implemented to speed up the runtime, the code is very dubious as its flow is hard to follow and a boost in performance is not guarenteed. If the code is not of type StringBuffer, it is converted to be a part of StringBuffer which could be an expensive operation in terms of time and space. Although intentional, this code should use the String.equals method, which greatly simplifies the code.
@@ -182,7 +281,7 @@
   \textbf{Error 10075:}
 
   This is a Bug on line 649 in Entities.java because this logic can cause an integer overflow. The method of resolving this is to change the signed right shift operator to an unsigned right shift operator. The following code shows how: (on line 648-650 in Entities.java)
-  
+
   \begin{lstlisting}
   while (low <= high) {
       int mid = (low + high) >>> 1;
@@ -193,33 +292,33 @@
   \textbf{Error 10076:}
 
   This is False Positive because it is stated in the documentation above the negate method that the program should return null if it is passed a null object.
-  
+
   \textbf{Error 10077:}
-  
+
   This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
-  
+
   \textbf{Error 10078:}
-  
+
   This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
-  
+
   \textbf{Error 10079:}
-  
+
   This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
-  
+
   \textbf{Error 10080:}
-  
+
   This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
-  
+
   \textbf{Error 10081:}
-  
+
   This is False Positive because it is stated in the documentation that the toBooleanObject method should return null if it is passed a null object.
 
   \textbf{Error 10082:}
-  
+
   This appears to be intentional. It is bad practice to catch a general error but it appears to be there for debugging purposes. It appears that the only case where the class would return null is if there is an error within the try/catch.
-  
+
   \textbf{Error 10083:}
-  
+
   This appears to be a bug on line 137 in FastDateFormat.java. There is a comment detailing that the fields should be serializable. Rules is a custom class and should either be serializable or transient to prevent serialization. A possible fix is as follows: (on line 137 in FastDateFormat.java)
 
   \begin{lstlisting}
@@ -227,14 +326,14 @@
   \end{lstlisting}
 
   \textbf{Error 10084:}
-  
+
   This appears to be intentional. In the hashmap, the key is never used, but this does not mean that the key will never be used. Therefore, it is justifiable that the developer stores the key although there is a performance impact. This performance impact is probably negligible, and can be considered bad practice but it has no impact and more functions could be written that use this variable.
 
   there are two possibilities. One possibility is that a StrBuilder is not suppose to be cloneable. In this case, the method clone would still show up as a valid method if left unimplemented but would throw an error when called. This is undesirable but acceptable behavior as the function only throws an error and does nothing else. If the StrBuilder is suppose to implement cloneable, then the developer has not implemented the clone function on purpose which is intentional but bad practice. If the developer meant to implement Clone later, then implementing cloneable at a different date would be the correct method of resolving this issue. This is probably intentional and meant to be implemented but it is considered to be bad practice.
 
   \item
   \textbf{Error 10248:}
-  
+
   This is a bug in CallGraph.java on line 25-68. The BufferedReader is not closed after we finish using it. A possible fix is as follows: (in CallGraph.java on line 67-68)
 
   \begin{lstlisting}
@@ -245,6 +344,6 @@
 
   \textbf{Error 10249:}
 
-  This is a Intentional. The try catch was placed there for debugging purposes to quickly identify if there exists a bug in the code. However, catching runtime errors is generally bad practice. 
+  This is a Intentional. The try catch was placed there for debugging purposes to quickly identify if there exists a bug in the code. However, catching runtime errors is generally bad practice.
   \end{enumerate}
 \end{document}
