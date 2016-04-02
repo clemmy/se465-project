@@ -80,9 +80,88 @@
       bug: apr_thread_mutex_unlock in apr_global_mutex_trylock, pair: (apr_thread_mutex_lock, apr_thread_mutex_unlock), support: 43, confidence: 91.49%
       \end{lstlisting}
 
-      From evaluating this output,
-      % apr_array_make, apr_array_push
-      % apr_array_make, apr_hook_debug_show
+      From evaluating this output, we discover that many of the reported bugs are false positives. Consider the two false positives below:
+
+      \begin{enumerate}
+      \item
+        \begin{lstlisting}
+bug: apr_array_make in ap_init_virtual_host,
+pair: (apr_array_make, apr_array_push), support: 40, confidence: 86.96%
+        \end{lstlisting}
+
+        \begin{lstlisting}
+AP_CORE_DECLARE(const char *) ap_init_virtual_host(apr_pool_t *p,
+                                                   const char *hostname,
+                                                   server_rec *main_server,
+                                                   server_rec **ps)
+{
+    server_rec *s = (server_rec *) apr_pcalloc(p, sizeof(server_rec));
+
+    /* TODO: this crap belongs in http_core */
+    s->process = main_server->process;
+    s->server_admin = NULL;
+    s->server_hostname = NULL;
+    s->server_scheme = NULL;
+    s->error_fname = NULL;
+    s->timeout = 0;
+    s->keep_alive_timeout = 0;
+    s->keep_alive = -1;
+    s->keep_alive_max = -1;
+    s->error_log = main_server->error_log;
+    s->loglevel = main_server->loglevel;
+    /* useful default, otherwise we get a port of 0 on redirects */
+    s->port = main_server->port;
+    s->next = NULL;
+
+    s->is_virtual = 1;
+    s->names = apr_array_make(p, 4, sizeof(char **));
+    s->wild_names = apr_array_make(p, 4, sizeof(char **));
+
+    s->module_config = create_empty_config(p);
+    s->lookup_defaults = ap_create_per_dir_config(p);
+
+    s->limit_req_line = main_server->limit_req_line;
+    s->limit_req_fieldsize = main_server->limit_req_fieldsize;
+    s->limit_req_fields = main_server->limit_req_fields;
+
+    *ps = s;
+
+    return ap_parse_vhost_addrs(p, hostname, s);
+}
+        \end{lstlisting}
+
+        The method ap\_init\_virtual\_host initializes the variables and data structures used for a server\_rec object. Therefore there is no need to push variables into the array because the method is intended to leave them at an empty state. Furthermore, the pair apr\_array\_make does not need to be followed by a call to apr\_array\_push because it is not required to insert objects into the array immediately following its initialization. This makes the function valid and the bug report a false positive.
+
+      \item
+        \begin{lstlisting}
+bug: apr_thread_mutex_lock in apu_dso_mutex_lock, 
+pair: (apr_thread_mutex_lock, apr_thread_mutex_unlock), support: 43,
+   confidence: 95.56%
+        \end{lstlisting}
+
+        \begin{lstlisting}
+#if APR_HAS_THREADS
+apr_status_t apu_dso_mutex_lock()
+{
+    return apr_thread_mutex_lock(mutex);
+}
+apr_status_t apu_dso_mutex_unlock()
+{
+    return apr_thread_mutex_unlock(mutex);
+}
+#else
+apr_status_t apu_dso_mutex_lock() {
+    return APR_SUCCESS;
+}
+apr_status_t apu_dso_mutex_unlock() {
+    return APR_SUCCESS;
+}
+#endif
+        \end{lstlisting}
+
+        The method apu\_dso\_mutex\_lock is actually a wrapper function of apr\_thread\_mutex\_lock. We should then expect that there is no need to also call apr\_thread\_mutex\_unlock and any functions that do call apu\_dso\_mutex\_lock should be followed by a apu\_dso\_mutex\_unlock. This makes the bug report a false positive.
+
+      \end{enumerate}
     \item
       For our interprocedural analysis, we decided to expand the inner functions in our call graph with the its callees if they existed. The depth that we expand into is passed in as an optional 4th parameter when running pipair. For example, if we want to expand 1 level deep with a support of 3 and confidence of 60\%, then we need to make 2 passes, and the resulting executing command is:
       \begin{lstlisting}[language=bash]
@@ -187,7 +266,6 @@
   \end{enumerate}
 
   \section*{Part (II)}
-  See pii/.
   \begin{enumerate}[(a)]
   \item
   \textbf{Error 10065:}
